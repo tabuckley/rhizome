@@ -398,9 +398,9 @@
         1
       ],
       "scale": [
-        2.8,
-        2.8,
-        2.8
+        0.527,
+        0.527,
+        0.527
       ],
       "parentId": "b534657a-38e6-4275-a37d-77b655561d5b",
       "components": {
@@ -413,7 +413,7 @@
             "easeOut": true,
             "easingFunction": "Elastic",
             "duration": 2000,
-            "toY": 0.04
+            "toY": 0
           }
         }
       },
@@ -422,9 +422,9 @@
       "gltfModel": {
         "src": {
           "type": "asset",
-          "asset": "assets/walking-breathing.glb"
+          "asset": "assets/potato-walker.glb"
         },
-        "animationClip": "RootWalk",
+        "animationClip": "WalkRigAction",
         "loop": true
       },
       "shadow": {
