@@ -129,7 +129,8 @@
           "xrCameraType": "world",
           "phone": "AR",
           "desktop": "disabled",
-          "headset": "disabled"
+          "headset": "disabled",
+          "scale": "absolute"
         }
       },
       "order": 2.1029089692509704
@@ -397,9 +398,9 @@
         1
       ],
       "scale": [
-        1,
-        1,
-        1
+        2.8,
+        2.8,
+        2.8
       ],
       "parentId": "b534657a-38e6-4275-a37d-77b655561d5b",
       "components": {
@@ -412,7 +413,7 @@
             "easeOut": true,
             "easingFunction": "Elastic",
             "duration": 2000,
-            "toY": 0.3
+            "toY": 0.04
           }
         }
       },
@@ -421,9 +422,9 @@
       "gltfModel": {
         "src": {
           "type": "asset",
-          "asset": "assets/8-jewel.glb"
+          "asset": "assets/walking-breathing.glb"
         },
-        "animationClip": "",
+        "animationClip": "RootWalk",
         "loop": true
       },
       "shadow": {
