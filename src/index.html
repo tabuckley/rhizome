@@ -21,7 +21,8 @@
 </head>
 
 <body>
-<script src="bundle.js"></script>
+<!-- Build hash in the URL so phones fetch the new bundle after each deploy instead of a cached one -->
+<script src="bundle.js?v=<%= compilation.hash %>"></script>
 
 </body>
 
