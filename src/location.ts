@@ -1,36 +1,33 @@
-// Approximate location of the person placing the potato, captured once from the intro screen.
-// Rounded to 2 decimal places (~1 km) so it shows the town, not the exact address.
+// Approximate location of the person sending the video, looked up from their IP address so there
+// is no permission prompt. Usually right to the city, but can be off by a region on mobile data.
+// Rounded to 2 decimal places (~1 km) so it shows the town, not an exact spot.
 type Location = {latitude: number, longitude: number}
 
-const LOCATION_TIMEOUT_MS = 10000
-
-let location: Location | null = null
+// Free, no key needed. Note it sees each sender's IP address.
+const LOOKUP_URL = 'https://get.geojs.io/v1/ip/geo.json'
+const LOOKUP_TIMEOUT_MS = 5000
 
 const round = (value: number) => Math.round(value * 100) / 100
 
-// Resolves once the person has answered the prompt (and a position was found) or it times out.
-// Never rejects: without a location the app still works, the upload just has no coordinates.
-const requestLocation = () => new Promise<void>((resolve) => {
-  if (!navigator.geolocation) {
-    resolve()
-    return
+// Never rejects: without a location the upload still goes through, just without coordinates.
+const lookupLocation = async (): Promise<Location | null> => {
+  try {
+    const response = await fetch(LOOKUP_URL, {signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS)})
+    if (!response.ok) {
+      return null
+    }
+    const data = await response.json()
+    const latitude = parseFloat(data.latitude)
+    const longitude = parseFloat(data.longitude)
+    if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+      return null
+    }
+    return {latitude: round(latitude), longitude: round(longitude)}
+  } catch (err) {
+    return null
   }
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      location = {
-        latitude: round(position.coords.latitude),
-        longitude: round(position.coords.longitude),
-      }
-      resolve()
-    },
-    () => resolve(),
-    {enableHighAccuracy: false, timeout: LOCATION_TIMEOUT_MS, maximumAge: 10 * 60 * 1000}
-  )
-})
-
-const getLocation = () => location
+}
 
 export {
-  requestLocation,
-  getLocation,
+  lookupLocation,
 }

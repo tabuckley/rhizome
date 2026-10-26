@@ -24,8 +24,10 @@ https://8thwall.org/studio-world-effects-example/
 ## Video uploads
 
 Recorded clips are uploaded to a Supabase Storage bucket (`src/upload.ts`), and each upload adds a
-row to the `potato_videos` table with the sender's name, approximate location (rounded to ~1 km)
-and the video's file name. Visitors can upload but cannot list or read anything; view the clips
+row to the `potato_videos` table with the sender's name, approximate location and the video's
+file name. The location is looked up from the sender's IP address when they tap Send
+(`src/location.ts`, via the free GeoJS service), so there's no location prompt. It's usually
+right to the city but can be a region off on mobile data, and is rounded to ~1 km. Visitors can upload but cannot list or read anything; view the clips
 under Storage and the details under Table Editor in the Supabase dashboard.
 
 1. Create a free project at https://supabase.com
@@ -46,6 +48,7 @@ under Storage and the details under Table Editor in the Supabase dashboard.
      longitude double precision check (longitude between -180 and 180)
    );
    alter table potato_videos enable row level security;
+   grant insert on potato_videos to anon;
    create policy "Anyone can add potato video details"
    on potato_videos for insert to anon
    with check (true);

@@ -1,14 +1,20 @@
-// Welcome screen shown before AR starts. Tapping Start asks for the microphone and location, then
-// starts the scene (which asks for the camera), so no permission prompt interrupts placing,
-// recording or sending.
-import {requestLocation} from './location'
+// Welcome screen shown before AR starts. Tapping Start asks for every permission up front, so
+// 8th Wall finds them already granted and no prompt interrupts placing, recording or sending.
+// iOS only: motion sensors need permission from a user gesture, so this must be the first thing
+// the Start tap does. Granting it here skips 8th Wall's own "tap to allow motion" screen.
+const requestMotion = () => {
+  const requests = [window.DeviceMotionEvent, window.DeviceOrientationEvent]
+    .map(event => (event as any)?.requestPermission?.().catch(() => {}))
+  return Promise.all(requests)
+}
 
-const requestMic = async () => {
+// Camera and microphone in one getUserMedia call show a single combined prompt.
+const requestCameraAndMic = async () => {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({audio: true})
+    const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
     stream.getTracks().forEach(track => track.stop())
   } catch (err) {
-    // Denied or unavailable: videos are recorded without audio.
+    // Mic denied or missing: 8th Wall still asks for the camera alone, videos have no audio.
   }
 }
 
@@ -28,7 +34,7 @@ const showIntro = () => new Promise<void>((resolve) => {
     </p>
     <p style="margin: 0; max-width: 340px; font-size: 14px; line-height: 1.5; color: #999;">
       We'll ask for your <b>camera</b> (to see your surroundings), <b>microphone</b> (for sound
-      in your video) and <b>location</b> (to put your potato on the map, roughly to your town).
+      in your video) and <b>motion</b> (to track the ground).
     </p>`
 
   const startButton = document.createElement('button')
@@ -38,11 +44,12 @@ const showIntro = () => new Promise<void>((resolve) => {
     background: #cb1010;`
 
   startButton.addEventListener('click', async () => {
+    const motion = requestMotion()
     startButton.disabled = true
     startButton.textContent = 'Starting…'
     // One prompt at a time, so they don't stack on top of each other
-    await requestMic()
-    await requestLocation()
+    await motion
+    await requestCameraAndMic()
     overlay.remove()
     resolve()
   })

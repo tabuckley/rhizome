@@ -14,17 +14,6 @@ const makeButton = (label: string, background: string) => {
   return button
 }
 
-// The intro screen normally asks for the mic already; this covers the editor/desktop where the
-// intro is skipped, so the prompt doesn't eat into the 5 seconds (or leave the clip silent).
-const ensureMicPermission = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({audio: true})
-    stream.getTracks().forEach(track => track.stop())
-  } catch (err) {
-    // Denied or unavailable: still record, just without audio.
-  }
-}
-
 // DOM overlays aren't drawn into the recording, so this countdown won't appear in the video.
 const showRecordingIndicator = () => {
   const indicator = document.createElement('div')
@@ -137,8 +126,7 @@ ecs.registerComponent({
     defineState('idle').initial().onEvent(ecs.input.UI_CLICK, 'recording')
 
     defineState('recording')
-      .onEnter(async () => {
-        await ensureMicPermission()
+      .onEnter(() => {
         getUi().hide()
         hideIndicator = showRecordingIndicator()
         world.xr.startMediaRecorder()

@@ -1,9 +1,9 @@
 // Uploads recorded clips to a Supabase Storage bucket and records each one in a table.
 // Fill these in from Supabase dashboard > Project Settings > API (see README "Video uploads").
-import {getLocation} from './location'
+import {lookupLocation} from './location'
 
-const SUPABASE_URL = 'https://YOUR-PROJECT-ID.supabase.co'
-const SUPABASE_KEY = 'YOUR-ANON-OR-PUBLISHABLE-KEY'
+const SUPABASE_URL = 'https://dozbimvaljyftkxstxub.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_COPRkM3lgvhvsoajb-2jNA_KSMV4UEs'
 const BUCKET = 'potato-videos'
 const TABLE = 'potato_videos'
 
@@ -36,8 +36,8 @@ const uploadVideo = async (blob: Blob, label: string) => {
   }
 
   // The video is already saved at this point, so a failure here is logged rather than shown
-  const location = getLocation()
   try {
+    const location = await lookupLocation()
     const rowResponse = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}`, {
       method: 'POST',
       headers: {...HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
