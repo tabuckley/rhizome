@@ -415,6 +415,11 @@
             "duration": 2000,
             "toY": 0
           }
+        },
+        "6f1d2c8e-4b7a-4e3f-9c5d-8a2b1e0f7d34": {
+          "id": "6f1d2c8e-4b7a-4e3f-9c5d-8a2b1e0f7d34",
+          "name": "random-model",
+          "parameters": {}
         }
       },
       "name": "Model",
@@ -422,9 +427,9 @@
       "gltfModel": {
         "src": {
           "type": "asset",
-          "asset": "assets/potato-walker.glb"
+          "asset": "assets/collage1_walk_AR.glb"
         },
-        "animationClip": "WalkRigAction",
+        "animationClip": "RootCreature",
         "loop": true
       },
       "shadow": {
