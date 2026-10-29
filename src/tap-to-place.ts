@@ -1,5 +1,7 @@
 import * as ecs from '@8thwall/ecs'
 
+import { trimWalkers } from './random-model'
+
 const OBJECT_PLACED_EVENT = 'object-placed'
 
 ecs.registerComponent({
@@ -16,6 +18,7 @@ ecs.registerComponent({
       const newEntity = world.getEntity(newEid)
       newEntity.setLocalPosition(e.data.worldPosition)
       newEntity.set(ecs.Quaternion, ecs.math.quat.yRadians(Math.random() * Math.PI))
+      trimWalkers(world)
       world.events.dispatch(eid, OBJECT_PLACED_EVENT)
     })
   }
