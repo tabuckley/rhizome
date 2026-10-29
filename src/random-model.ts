@@ -6,14 +6,19 @@ import collage4 from './assets/collage4_walk_20s_AR.glb'
 import collage5 from './assets/collage5_walk_long_sides_AR.glb'
 import potato from './assets/potato_walker_AR.glb'
 
-// Each model paired with the name of its walk animation clip
+// Each model paired with the name of its walk animation clip. size evens out the files: the
+// collages are about 1.9 units tall but the potato only 0.48, so it is scaled up 4x.
 const MODELS = [
-  {url: collage1, animationClip: 'RootCreature'},
-  {url: collage2, animationClip: 'RootCreature'},
-  {url: collage4, animationClip: 'RootCreature'},
-  {url: collage5, animationClip: 'RootCreature'},
-  {url: potato, animationClip: 'WalkTurnReturn'},
+  {url: collage1, animationClip: 'RootCreature', size: 1},
+  {url: collage2, animationClip: 'RootCreature', size: 1},
+  {url: collage4, animationClip: 'RootCreature', size: 1},
+  {url: collage5, animationClip: 'RootCreature', size: 1},
+  {url: potato, animationClip: 'WalkTurnReturn', size: 4},
 ]
+
+// Scale of the Model entity in the prefab (.expanse.json). Set here too, so it doesn't depend on
+// whether the prefab's scale is applied before or after this component's add.
+const PREFAB_SCALE = 0.527
 
 // Too many walkers at once crashes the app, so the oldest are removed past this
 const MAX_WALKERS = 4
@@ -31,8 +36,10 @@ ecs.registerComponent({
     const choices = unused.length ? unused : MODELS.map((_, i) => i)
     const model = choices[Math.floor(Math.random() * choices.length)]
     walkers.push({eid: component.eid, model})
-    const {url, animationClip} = MODELS[model]
+    const {url, animationClip, size} = MODELS[model]
     ecs.GltfModel.set(world, component.eid, {url, animationClip, loop: true})
+    const scale = PREFAB_SCALE * size
+    ecs.Scale.set(world, component.eid, {x: scale, y: scale, z: scale})
   },
   remove: (world, component) => {
     const i = walkers.findIndex(w => w.eid === component.eid)
