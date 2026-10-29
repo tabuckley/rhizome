@@ -1,4 +1,5 @@
 import * as ecs from '@8thwall/ecs'
+import {hideLoading} from './loading'
 
 ecs.registerComponent({
   name: 'hide-on-ready',
@@ -9,6 +10,7 @@ ecs.registerComponent({
 
     defineState('ready').onEnter(() => {
       ecs.Disabled.reset(world, eid)
+      hideLoading()
     })
   }
 })

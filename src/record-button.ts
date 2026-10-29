@@ -1,52 +1,100 @@
 import * as ecs from '@8thwall/ecs'
+import endImage from './assets/potato-end.jpg'
+import {getHud} from './hud'
+import {
+  INK, PAPER, MUTED, BODY, CAMERA_STANDIN, SERIF, MONO, LABEL_STYLE, PRIMARY_BUTTON_STYLE,
+  SECONDARY_BUTTON_STYLE, SCREEN_STYLE, makeButton,
+} from './theme'
 import {uploadVideo} from './upload'
 
 // Recording length and end card are configured in app.js (XR8.MediaRecorder.configure)
 const RECORD_SECONDS = 5
 
-const BUTTON_STYLE = `
-  border: none; border-radius: 6px; padding: 12px 24px; font-size: 18px; color: #fff;`
+const RECORD_TAPPED_EVENT = 'record-tapped'
 
-const makeButton = (label: string, background: string) => {
-  const button = document.createElement('button')
-  button.textContent = label
-  button.style.cssText = `${BUTTON_STYLE} background: ${background};`
-  return button
-}
-
-// DOM overlays aren't drawn into the recording, so this countdown won't appear in the video.
+// DOM overlays aren't drawn into the recording, so this progress line and timer won't appear in
+// the video.
 const showRecordingIndicator = () => {
-  const indicator = document.createElement('div')
-  indicator.style.cssText = `
-    position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000;
-    background: rgba(0,0,0,0.6); color: #fff; padding: 8px 16px; border-radius: 20px;
-    font: 18px Roboto, sans-serif; display: flex; align-items: center; gap: 8px;`
-  const dot = '<span style="width:12px;height:12px;border-radius:50%;background:#e00"></span>'
-  let remaining = RECORD_SECONDS
+  const progress = document.createElement('div')
+  progress.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 10000;
+    background: ${PAPER};`
+  const fill = document.createElement('div')
+  fill.style.cssText = `height: 100%; width: 0; background: ${INK};
+    transition: width ${RECORD_SECONDS}s linear;`
+  progress.append(fill)
+
+  const tag = document.createElement('div')
+  tag.style.cssText = `
+    position: fixed; top: calc(env(safe-area-inset-top) + 20px); left: 50%;
+    transform: translateX(-50%); z-index: 10000; background: ${PAPER}; color: ${INK};
+    border: 1px solid ${INK}; padding: 8px 14px; display: flex; align-items: center; gap: 10px;
+    font: 11px ${MONO}; letter-spacing: 0.02em; white-space: nowrap;`
+  const dot = `<span style="width: 8px; height: 8px; border-radius: 50%; background: ${INK};"></span>`
+  let elapsed = 0
   const render = () => {
-    indicator.innerHTML = remaining > 0 ? `${dot} Recording ${remaining}s` : 'Processing…'
+    tag.innerHTML = elapsed < RECORD_SECONDS
+      ? `${dot}<span>rec</span><span style="color: ${MUTED};">00:0${elapsed}</span>`
+      : '<span>processing…</span>'
   }
   render()
   const interval = setInterval(() => {
-    remaining = Math.max(0, remaining - 1)
+    elapsed = Math.min(RECORD_SECONDS, elapsed + 1)
     render()
   }, 1000)
-  document.body.append(indicator)
+
+  document.body.append(progress, tag)
+  // Read the layout first so the bar animates from empty instead of appearing full
+  fill.getBoundingClientRect()
+  fill.style.width = '100%'
+
   return () => {
     clearInterval(interval)
-    indicator.remove()
+    progress.remove()
+    tag.remove()
   }
 }
 
-// Shows the recorded clip with a name field and Send / Retake buttons. Send uploads the clip.
+// Shown once a clip is sent. Done returns to the camera.
+const showSent = (onDone: () => void) => {
+  const overlay = document.createElement('div')
+  overlay.style.cssText = SCREEN_STYLE
+
+  overlay.innerHTML = `
+    <div style="${LABEL_STYLE}">sent · ${RECORD_SECONDS} sec</div>
+    <div style="height: 1px; background: ${INK}; margin-top: 12px;"></div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;
+      gap: 24px; padding: 24px 0;">
+      <img src="${endImage}" alt="" style="height: min(442px, 44vh); width: auto;
+        align-self: center; display: block;">
+      <h1 style="margin: 0; font: 56px/1 ${SERIF};">received.</h1>
+      <p style="margin: 0; font: italic 22px/1.3 ${SERIF}; color: ${BODY};">
+        it will remember where you were.</p>
+    </div>`
+
+  const doneButton = makeButton('done', SECONDARY_BUTTON_STYLE)
+  doneButton.style.flexShrink = '0'
+  doneButton.addEventListener('click', () => {
+    overlay.remove()
+    onDone()
+  })
+
+  overlay.append(doneButton)
+  document.body.append(overlay)
+}
+
+// Shows the recorded clip with a name field and Retake / Send buttons. Send uploads the clip.
 const showPreview = (blob: Blob, onClose: () => void) => {
   const url = URL.createObjectURL(blob)
 
   const overlay = document.createElement('div')
-  overlay.style.cssText = `
-    position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.85);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 16px; padding: 16px; box-sizing: border-box; font-family: Roboto, sans-serif;`
+  overlay.style.cssText = `${SCREEN_STYLE} gap: 20px;`
+
+  const header = document.createElement('div')
+  header.style.cssText = 'display: flex; justify-content: space-between; align-items: baseline;'
+  header.innerHTML = `
+    <span style="font: 30px ${SERIF};">your visit.</span>
+    <span style="${LABEL_STYLE}">0:0${RECORD_SECONDS}</span>`
 
   const video = document.createElement('video')
   video.src = url
@@ -54,7 +102,9 @@ const showPreview = (blob: Blob, onClose: () => void) => {
   video.autoplay = true
   video.loop = true
   video.playsInline = true
-  video.style.cssText = 'max-width: 100%; max-height: 70vh; border-radius: 8px;'
+  video.style.cssText = `
+    flex: 1 1 0; min-height: 160px; width: 100%; object-fit: cover; box-sizing: border-box;
+    border: 1px solid ${INK}; background: ${CAMERA_STANDIN};`
 
   const close = () => {
     overlay.remove()
@@ -62,84 +112,86 @@ const showPreview = (blob: Blob, onClose: () => void) => {
     onClose()
   }
 
+  const field = document.createElement('div')
+  field.style.cssText = 'display: flex; flex-direction: column; gap: 6px;'
+  field.innerHTML = `<label for="sender-name" style="${LABEL_STYLE}">who sent this (optional)</label>`
+
   const nameInput = document.createElement('input')
-  nameInput.placeholder = 'Your name / town (optional)'
+  nameInput.id = 'sender-name'
+  nameInput.placeholder = 'name, town'
   nameInput.maxLength = 40
   nameInput.style.cssText = `
-    width: min(100%, 320px); box-sizing: border-box; padding: 10px 12px; font-size: 16px;
-    border: none; border-radius: 6px;`
+    height: 44px; border: none; border-bottom: 1px solid ${INK}; border-radius: 0; padding: 0;
+    background: none; color: ${INK}; font: 22px ${SERIF}; outline: none;`
+  field.append(nameInput)
 
   const status = document.createElement('div')
-  status.style.cssText = 'color: #fff; font-size: 16px; min-height: 20px; text-align: center;'
+  status.style.cssText = `${LABEL_STYLE} min-height: 16px; text-align: center;`
 
-  const sendButton = makeButton('Send', '#cb1010')
-  const closeButton = makeButton('Retake', '#555')
+  const closeButton = makeButton('retake', SECONDARY_BUTTON_STYLE)
+  const sendButton = makeButton('send', PRIMARY_BUTTON_STYLE)
 
   sendButton.addEventListener('click', async () => {
     sendButton.disabled = true
     closeButton.disabled = true
     nameInput.disabled = true
-    status.textContent = 'Sending…'
+    sendButton.textContent = 'sending…'
+    status.textContent = ''
     try {
       await uploadVideo(blob, nameInput.value)
-      status.textContent = 'Sent! Thank you 🥔'
-      sendButton.remove()
-      closeButton.textContent = 'Done'
+      overlay.remove()
+      URL.revokeObjectURL(url)
+      showSent(onClose)
     } catch (err) {
       console.error(err)
-      status.textContent = 'Couldn\'t send. Check your connection and try again.'
+      status.textContent = 'couldn\'t send. check your connection and try again.'
+      sendButton.textContent = 'send'
       sendButton.disabled = false
+      closeButton.disabled = false
       nameInput.disabled = false
     }
-    closeButton.disabled = false
   })
 
   closeButton.addEventListener('click', close)
 
   const buttons = document.createElement('div')
-  buttons.style.cssText = 'display: flex; gap: 12px;'
-  buttons.append(sendButton, closeButton)
+  buttons.style.cssText = 'display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;'
+  buttons.append(closeButton, sendButton)
 
-  overlay.append(video, nameInput, buttons, status)
+  overlay.append(header, video, field, buttons, status)
   document.body.append(overlay)
 }
 
+// Drives the HUD's record button. The HUD is hidden while recording so it stays out of the way.
 ecs.registerComponent({
   name: 'record-button',
-  schema: {
-    // UI entity to hide while recording, so the buttons don't appear in the video
-    hideWhileRecording: 'eid',
-  },
-  stateMachine: ({world, eid, schemaAttribute, defineState}) => {
+  stateMachine: ({world, eid, defineState}) => {
+    const hud = getHud()
+    hud.recordButton.addEventListener('click', () => world.events.dispatch(eid, RECORD_TAPPED_EVENT))
     let hideIndicator: (() => void) | null = null
-
-    const getUi = () => {
-      const uiEid = schemaAttribute.get(eid).hideWhileRecording
-      return world.getEntity(uiEid || eid)
-    }
 
     const finish = () => {
       hideIndicator?.()
       hideIndicator = null
     }
 
-    defineState('idle').initial().onEvent(ecs.input.UI_CLICK, 'recording')
+    defineState('idle').initial().onEvent(RECORD_TAPPED_EVENT, 'recording')
 
     defineState('recording')
       .onEnter(() => {
-        getUi().hide()
+        hud.hide()
         hideIndicator = showRecordingIndicator()
         world.xr.startMediaRecorder()
       })
       .listen(world.events.globalId, ecs.events.RECORDER_VIDEO_READY, (e) => {
         finish()
-        showPreview(e.data.videoBlob, () => getUi().show())
+        showPreview(e.data.videoBlob, () => hud.show())
         world.events.dispatch(eid, 'record-done')
       })
       .listen(world.events.globalId, ecs.events.RECORDER_VIDEO_ERROR, (e) => {
         console.error('Recording failed', e.data)
         finish()
-        getUi().show()
+        hud.show()
         world.events.dispatch(eid, 'record-done')
       })
       .onEvent('record-done', 'idle')

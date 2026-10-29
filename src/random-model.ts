@@ -50,6 +50,16 @@ const trimWalkers = (world: ecs.World) => {
   }
 }
 
+const walkerCount = () => walkers.length
+
+// Clear deletes every walker at once, so forget them all rather than relying on each removal
+const forgetWalkers = () => {
+  walkers.length = 0
+}
+
 export {
+  MAX_WALKERS,
   trimWalkers,
+  walkerCount,
+  forgetWalkers,
 }
