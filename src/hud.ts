@@ -23,9 +23,12 @@ const createHud = () => {
   bottomBar.style.cssText = `${BAR_STYLE} bottom: 0; border-top: 1px solid ${INK};
     padding: 18px 24px ${SAFE_BOTTOM};`
 
+  // As tall as the record button, so the camera view keeps the same framing in both states
   const prompt = document.createElement('div')
   prompt.textContent = 'it will arrive here'
-  prompt.style.cssText = 'text-align: center; font-size: 11px; letter-spacing: 0.02em;'
+  prompt.style.cssText = `
+    height: 76px; align-items: center; justify-content: center; font-size: 11px;
+    letter-spacing: 0.02em;`
 
   const controls = document.createElement('div')
   controls.style.cssText = `
@@ -56,21 +59,25 @@ const createHud = () => {
   container.append(topBar, bottomBar)
   document.body.append(container)
 
-  const showPrompt = () => {
+  // Both states share one layout (label line, then headline) so the top bar keeps its height
+  const setTopBar = (label: string, detail: string, headline: string) => {
     topBar.innerHTML = `
-      <div style="${LABEL_STYLE}">step one</div>
-      <div style="font: 34px/1 ${SERIF}; margin-top: 8px;">tap the ground.</div>`
-    prompt.style.display = 'block'
+      <div style="display: flex; justify-content: space-between; ${LABEL_STYLE}">
+        <span>${label}</span><span>${detail}</span>
+      </div>
+      <div style="font: 34px/1 ${SERIF}; margin-top: 8px; white-space: nowrap;">${headline}</div>`
+  }
+
+  const showPrompt = () => {
+    setTopBar('step one', '', 'tap the ground.')
+    prompt.style.display = 'flex'
     controls.style.display = 'none'
   }
 
   const showPlaced = (count: number) => {
     const verb = count === 1 ? 'has' : 'have'
-    topBar.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: baseline;">
-        <span style="font: 26px ${SERIF};">${COUNT_WORDS[count] ?? count} ${verb} arrived.</span>
-        <span style="${LABEL_STYLE}">${count} / ${MAX_WALKERS}</span>
-      </div>`
+    setTopBar('step two · record', `${count} / ${MAX_WALKERS}`,
+      `${COUNT_WORDS[count] ?? count} ${verb} arrived.`)
     prompt.style.display = 'none'
     controls.style.display = 'grid'
   }
