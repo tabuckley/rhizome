@@ -2,7 +2,7 @@ import * as ecs from '@8thwall/ecs'
 import { Logo } from './logo'
 import { OBJECT_PLACED_EVENT } from './tap-to-place'
 import { getHud } from './hud'
-import { walkerCount, forgetWalkers } from './random-model'
+import { walkerCount, forgetWalkers, WALKERS_CHANGED_EVENT } from './random-model'
 
 const logoQuery = ecs.defineQuery([Logo])
 
@@ -23,7 +23,7 @@ ecs.registerComponent({
 
     defineState('placed')
       .onEnter(showCount)
-      .listen(world.events.globalId, OBJECT_PLACED_EVENT, showCount)
+      .listen(world.events.globalId, WALKERS_CHANGED_EVENT, showCount)
       .onEvent(CLEAR_TAPPED_EVENT, 'resetting')
 
     defineState('resetting')
