@@ -1,5 +1,6 @@
 import * as ecs from '@8thwall/ecs'
 import endImage from './assets/potato-end.jpg'
+import {trackStep} from './analytics'
 import {getHud} from './hud'
 import {
   INK, PAPER, MUTED, BODY, CAMERA_STANDIN, SERIF, MONO, LABEL_STYLE, PRIMARY_BUTTON_STYLE,
@@ -139,6 +140,7 @@ const showPreview = (blob: Blob, onClose: () => void) => {
     status.textContent = ''
     try {
       await uploadVideo(blob, nameInput.value)
+      trackStep('sent')
       overlay.remove()
       URL.revokeObjectURL(url)
       showSent(onClose)
@@ -182,6 +184,7 @@ ecs.registerComponent({
         hud.hide()
         hideIndicator = showRecordingIndicator()
         world.xr.startMediaRecorder()
+        trackStep('recorded')
       })
       .listen(world.events.globalId, ecs.events.RECORDER_VIDEO_READY, (e) => {
         finish()

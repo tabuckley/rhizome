@@ -1,4 +1,5 @@
 import * as ecs from '@8thwall/ecs'
+import {trackStep} from './analytics'
 
 const OBJECT_PLACED_EVENT = 'object-placed'
 
@@ -17,6 +18,7 @@ ecs.registerComponent({
       newEntity.setLocalPosition(e.data.worldPosition)
       newEntity.set(ecs.Quaternion, ecs.math.quat.yRadians(Math.random() * Math.PI))
       world.events.dispatch(eid, OBJECT_PLACED_EVENT)
+      trackStep('placed')
     })
   }
 })
