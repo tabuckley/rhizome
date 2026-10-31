@@ -1,14 +1,12 @@
-# Studio: World Effects
+# Potato Patata
 
-This project demonstrates how to use World Effects to anchor virtual content to a flat surface.
-
-![Preview of the world effects project open in the editor](./src/assets/preview.jpg)
+Place a potato on the ground, record ten seconds of its visit and send it back.
 
 <details><summary>Try it out</summary>
 
-https://8thwall.org/studio-world-effects-example/
+https://potato-patata.online/
 
-<img alt="QR Code for the preview link" src="https://8th.io/qr?v=2&url=https://8thwall.org/studio-world-effects-example/" width=250 height=250 />
+<img alt="QR Code for the site" src="https://8th.io/qr?v=2&url=https://potato-patata.online/" width=250 height=250 />
 
 </details>
 
