@@ -42,7 +42,7 @@ const createHud = () => {
     text-underline-offset: 4px; -webkit-tap-highlight-color: transparent;`
 
   const recordButton = document.createElement('button')
-  recordButton.setAttribute('aria-label', 'record five seconds')
+  recordButton.setAttribute('aria-label', 'record ten seconds')
   recordButton.style.cssText = `
     justify-self: center; width: 76px; height: 76px; border-radius: 50%; border: 1px solid ${INK};
     background: none; padding: 0; display: flex; align-items: center; justify-content: center;
@@ -51,7 +51,7 @@ const createHud = () => {
     <span style="width: 60px; height: 60px; border-radius: 50%; background: ${INK};"></span>`
 
   const length = document.createElement('span')
-  length.textContent = '5 sec'
+  length.textContent = '10 sec'
   length.style.cssText = `justify-self: end; ${LABEL_STYLE}`
 
   controls.append(clearButton, recordButton, length)

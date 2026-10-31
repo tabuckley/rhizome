@@ -54,7 +54,7 @@ const showIntro = () => new Promise<void>((resolve) => {
     <h1 style="margin: 0; font: 38px/1.02 ${SERIF}; letter-spacing: -0.01em;">
       put down roots, and form a small rhizome.</h1>
     <p style="margin: 14px 0 0; font-size: 13px; line-height: 1.6; color: ${BODY};">
-      tap the ground to place a potato. record five seconds of its visit and send it back.</p>
+      tap the ground to place a potato. record ten seconds of its visit and send it back.</p>
     <div style="margin-top: auto; padding-top: 24px; font-size: 12px; letter-spacing: 0.02em;">
       <div style="${LABEL_STYLE} padding-bottom: 10px;">we will ask for</div>
       ${rows}

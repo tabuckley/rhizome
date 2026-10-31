@@ -3,9 +3,9 @@ const onxrloaded = () => {
   LandingPage.configure({
     mediaSrc: './assets/preview.jpg'
   })
-  // Used by record-button.ts: 5 second clips with mic audio and no 8th Wall end card
+  // Used by record-button.ts: 10 second clips with mic audio and no 8th Wall end card
   XR8.MediaRecorder.configure({
-    maxDurationMs: 5000,
+    maxDurationMs: 10000,
     enableEndCard: false,
     requestMic: 'auto',
   })

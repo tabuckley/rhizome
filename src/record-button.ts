@@ -8,7 +8,7 @@ import {
 import {uploadVideo} from './upload'
 
 // Recording length and end card are configured in app.js (XR8.MediaRecorder.configure)
-const RECORD_SECONDS = 5
+const RECORD_SECONDS = 10
 
 const RECORD_TAPPED_EVENT = 'record-tapped'
 
@@ -34,7 +34,7 @@ const showRecordingIndicator = () => {
   let elapsed = 0
   const render = () => {
     tag.innerHTML = elapsed < RECORD_SECONDS
-      ? `${dot}<span>rec</span><span style="color: ${MUTED};">00:0${elapsed}</span>`
+      ? `${dot}<span>rec</span><span style="color: ${MUTED};">00:${String(elapsed).padStart(2, '0')}</span>`
       : '<span>processing…</span>'
   }
   render()
@@ -94,7 +94,7 @@ const showPreview = (blob: Blob, onClose: () => void) => {
   header.style.cssText = 'display: flex; justify-content: space-between; align-items: baseline;'
   header.innerHTML = `
     <span style="font: 30px ${SERIF};">your visit.</span>
-    <span style="${LABEL_STYLE}">0:0${RECORD_SECONDS}</span>`
+    <span style="${LABEL_STYLE}">0:${String(RECORD_SECONDS).padStart(2, '0')}</span>`
 
   const video = document.createElement('video')
   video.src = url
