@@ -1,4 +1,6 @@
 import homeImage from './assets/potato-home.jpg'
+import {trackStep} from './analytics'
+import {showDesktop} from './desktop'
 import {showLoading} from './loading'
 import {
   INK, MUTED, BODY, RULE, SERIF, LABEL_STYLE, PRIMARY_BUTTON_STYLE, SCREEN_STYLE, makeButton,
@@ -64,6 +66,7 @@ const showIntro = () => new Promise<void>((resolve) => {
   startButton.style.cssText += 'margin-top: 24px; flex-shrink: 0;'
 
   startButton.addEventListener('click', async () => {
+    trackStep('begin')
     const motion = requestMotion()
     startButton.disabled = true
     startButton.textContent = 'starting…'
@@ -80,18 +83,22 @@ const showIntro = () => new Promise<void>((resolve) => {
   document.body.append(overlay)
 })
 
-// Skip the intro inside the 8th Wall editor and on desktop (which shows the "open on your
-// phone" landing page instead).
+// Skip the intro inside the 8th Wall editor. On desktop, show the "open on your phone" page
+// (desktop.ts) and never start the scene.
 const isEditor = window.location.href.includes('liveSyncMode')
 const isTouchDevice = navigator.maxTouchPoints > 0
 
-if (!isEditor && isTouchDevice) {
+if (!isEditor) {
   // The generated entry calls ecs.application.init(scene) after all src files have run, so
   // wrapping it here delays starting the scene (and the camera prompt) until Begin is tapped.
   // application isn't in the ecs type definitions, so reach it through window
   const {application} = (window as any).ecs
   const init = application.init.bind(application)
   application.init = (...args) => {
-    showIntro().then(() => init(...args))
+    if (isTouchDevice) {
+      showIntro().then(() => init(...args))
+    } else {
+      showDesktop()
+    }
   }
 }
