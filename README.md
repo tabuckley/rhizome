@@ -1,6 +1,6 @@
 # Potato Patata
 
-Place a potato on the ground, record ten seconds of its visit and send it back.
+Place a potato in the world, record ten seconds of its visit and send it back. By Maria de la O Garrido
 
 <details><summary>Try it out</summary>
 
